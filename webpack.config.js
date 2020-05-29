@@ -4,7 +4,9 @@ module.exports = {
     entry: ['./3explorer.js'],
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'js/bundle.js'
+        filename: 'js/bundle.js',
+        library: '3explorer',
+        libraryTarget: "umd"
     },
     devServer: {
         contentBase: './dist'
@@ -25,5 +27,6 @@ module.exports = {
                 }
             }
         ]
-    }
+    },
+    devtool: 'sourceMap',
 };
