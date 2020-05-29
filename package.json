@@ -1,0 +1,32 @@
+{
+  "name": "3explorer",
+  "version": "1.0.0",
+  "description": "3D website model explorer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "start": "webpack-dev-server --mode development --open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danipisca07/3explorer.git"
+  },
+  "author": "Daniele Piscaglia",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/danipisca07/3explorer/issues"
+  },
+  "homepage": "https://github.com/danipisca07/3explorer#readme",
+  "devDependencies": {
+    "html-webpack-plugin": "^4.3.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "jquery": "^3.5.1",
+    "three": "^0.117.1"
+  }
+}
