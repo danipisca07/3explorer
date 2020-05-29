@@ -1,6 +1,6 @@
 import * as THREE from 'https://unpkg.com/three@0.108.0/build/three.module.js';
 import {OrbitControls} from 'https://unpkg.com/three@0.108.0/examples/jsm/controls/OrbitControls.js';
-import { loadObj } from "./3explorer.js";
+import { loadObj, loadGLTF, frameArea } from "./3explorer.js";
 
 function main(){
     const canvas = document.querySelector('#c');
@@ -13,7 +13,7 @@ function main(){
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
     const controls = new OrbitControls(camera, canvas);
-    controls.target.set(0, 50, 0);
+    controls.target.set(0, 10, 0);
     controls.update();
 
 
@@ -29,7 +29,8 @@ function main(){
         scene.add(light);
     }
 
-    loadObj(scene, 'assets/IronMan/IronMan');
+    //loadObj(scene, 'assets/IronMan/IronMan');
+    loadGLTF(scene, 'assets/house/scene.gltf', camera);
 
     function render(time){
         time *= 0.001;
