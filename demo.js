@@ -1,5 +1,6 @@
 import * as THREE from 'https://unpkg.com/three@0.108.0/build/three.module.js';
 import {OrbitControls} from 'https://unpkg.com/three@0.108.0/examples/jsm/controls/OrbitControls.js';
+import { PointerLockControls } from 'https://unpkg.com/three@0.108.0/examples/jsm/controls/PointerLockControls.js';
 import {GUI} from './dat.gui.module.js';
 import { loadObj, loadGLTF} from "./3explorer.js";
 
@@ -12,6 +13,8 @@ function showLocalAxes(node){
 
 const originRotation = new THREE.Object3D();
 
+let controls;
+
 function main(){
     const canvas = document.querySelector('#c');
     const renderer = new THREE.WebGLRenderer({canvas});
@@ -23,15 +26,28 @@ function main(){
     const near = 0.1;
     const far = 10000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-
-    const controls = new OrbitControls(camera, canvas);
-    controls.target.set(0, 10, 0);
-    controls.update();
+    camera.position.set(-4,4,4);
 
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xAAAAAA); //Colore background
 
+    controls = new PointerLockControls( camera, canvas );
+    canvas.addEventListener('mousedown', () =>{
+        controls.lock();
+    });
+    canvas.addEventListener('mouseup', () => {
+        controls.unlock();
+    });
+
+    controls.addEventListener( 'lock', function () {
+        console.log("lock");
+    } );
+
+    controls.addEventListener( 'unlock', function () {
+        console.log("unlock");
+    } );
+    scene.add(controls.getObject());
 
     originRotation.position.set(0,0,0);
     scene.add(originRotation);
@@ -68,7 +84,7 @@ function main(){
 
     //loadObj(scene, 'assets/IronMan/IronMan');
     //loadGLTF(scene, 'assets/house/scene.gltf', camera, controls);
-    loadGLTF(scene, 'assets/uncompressed.gltf', camera, controls);
+    loadGLTF(scene, 'assets/uncompressed.gltf', camera);
 
     function render(time){
         time *= 0.0006;
