@@ -10,7 +10,7 @@ function showLocalAxes(node){
     node.add(axes);
 }
 
-let light;
+const originRotation = new THREE.Object3D();
 
 function main(){
     const canvas = document.querySelector('#c');
@@ -32,7 +32,11 @@ function main(){
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xAAAAAA); //Colore background
 
-    light = new THREE.AmbientLight(0xFFFFFF, 0.2);
+
+    originRotation.position.set(0,0,0);
+    scene.add(originRotation);
+
+    let light = new THREE.AmbientLight(0xFFFFFF, 0.2);
     scene.add(light);
 
     //Luce punto
@@ -40,11 +44,12 @@ function main(){
         const color = 0xFFFFFF;
         const intensity = 1;
         light = new THREE.PointLight(color, intensity); //Default posizione e orientamento = (0,0,0)
-        light.position.set(3,2,4); //Cambio la posizione
+        light.position.set(3,2.3,4); //Cambio la posizione
         light.distance = Infinity;//La luce punto ha anche la proprietà distance, se 0 è infinita, altrimenti la luce "decade" linearmente fino a distance dove è = 0
         light.castShadow = true;
+        light.shadow.bias = -0.001
         light.decay = 0;
-        scene.add(light);
+        originRotation.add(light);
 
         const helper = new THREE.PointLightHelper(light);
         helper.scale.set(200,200,200);
@@ -56,6 +61,9 @@ function main(){
         const minMaxGUIHelper = new MinMaxGUIHelper(light.shadow.camera, 'near', 'far', 0.1);
         folder.add(minMaxGUIHelper, 'min', 0.1, 550, 0.1).name('near').onChange(updateCamera);
         folder.add(minMaxGUIHelper, 'max', 0.1, 5000, 0.1).name('far').onChange(updateCamera);
+
+        gui.add(light.shadow, 'bias').min(-0.01).max(0.01).step(0.00001);
+
     }
 
     //loadObj(scene, 'assets/IronMan/IronMan');
@@ -63,7 +71,9 @@ function main(){
     loadGLTF(scene, 'assets/uncompressed.gltf', camera, controls);
 
     function render(time){
-        time *= 0.001;
+        time *= 0.0006;
+
+        originRotation.rotation.y = time;
 
         //Ridimensionamento responsive del canvas
         if (resizeRendererToDisplaySize(renderer)) {
