@@ -32,6 +32,9 @@ function main(){
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xAAAAAA); //Colore background
 
+    light = new THREE.AmbientLight(0xFFFFFF, 0.2);
+    scene.add(light);
+
     //Luce punto
     {
         const color = 0xFFFFFF;
