@@ -28,10 +28,10 @@ function loadGLTF(scene, path, camera, controls){
     gltfLoader.load(path, (gltf) => {
         const root = gltf.scene;
         scene.add(root);
-        root.traverse((obj) => {
+        root.children.forEach((obj) => {
             if (obj.castShadow !== undefined) {
-                obj.castShadow = false;
-                obj.receiveShadow = false;
+                obj.castShadow = true;
+                obj.receiveShadow = true;
             }
         });
         if(camera != undefined){

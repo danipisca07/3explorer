@@ -37,7 +37,7 @@ function main(){
         const color = 0xFFFFFF;
         const intensity = 1;
         light = new THREE.PointLight(color, intensity); //Default posizione e orientamento = (0,0,0)
-        light.position.set(1500, 2000, 0); //Cambio la posizione
+        light.position.set(3,2,4); //Cambio la posizione
         light.distance = Infinity;//La luce punto ha anche la proprietà distance, se 0 è infinita, altrimenti la luce "decade" linearmente fino a distance dove è = 0
         light.castShadow = true;
         light.decay = 0;
@@ -45,7 +45,7 @@ function main(){
 
         const helper = new THREE.PointLightHelper(light);
         helper.scale.set(200,200,200);
-        showLocalAxes(helper);
+        //showLocalAxes(helper);
         scene.add(helper);
 
         const folder = gui.addFolder('Shadow Camera');
@@ -57,7 +57,7 @@ function main(){
 
     //loadObj(scene, 'assets/IronMan/IronMan');
     //loadGLTF(scene, 'assets/house/scene.gltf', camera, controls);
-    loadGLTF(scene, 'assets/testscene.glb', camera, controls);
+    loadGLTF(scene, 'assets/uncompressed.gltf', camera, controls);
 
     function render(time){
         time *= 0.001;
