@@ -5,6 +5,8 @@ import {MTLLoader} from 'https://unpkg.com/three@0.108.0/examples/jsm/loaders/MT
 import {MtlObjBridge} from 'https://unpkg.com/three@0.108.0/examples/jsm/loaders/obj2/bridge/MtlObjBridge.js';
 
 import {GLTFLoader} from 'https://unpkg.com/three@0.108.0/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'https://unpkg.com/three@0.108.0/examples/jsm/loaders/DRACOLoader.js';
+
 
 function loadObj(scene, path){
     const objLoader = new OBJLoader2();
@@ -18,19 +20,32 @@ function loadObj(scene, path){
     });
 }
 
-function loadGLTF(scene, path, camera){
+function loadGLTF(scene, path, camera, controls){
     const gltfLoader = new GLTFLoader();
+    var dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath( './js/libs/draco/' );
+    gltfLoader.setDRACOLoader( dracoLoader );
     gltfLoader.load(path, (gltf) => {
         const root = gltf.scene;
         scene.add(root);
+        root.traverse((obj) => {
+            if (obj.castShadow !== undefined) {
+                obj.castShadow = false;
+                obj.receiveShadow = false;
+            }
+        });
         if(camera != undefined){
             const box = new THREE.Box3().setFromObject(root);
             const boxSize = box.getSize(new THREE.Vector3()).length();
             const boxCenter = box.getCenter(new THREE.Vector3());
+            console.log('boxSize: '+boxSize);
+            console.log('boxCenter: ( ' + boxCenter.x + '; ' + boxCenter.y + '; ' + boxCenter.z + ' )');
             frameArea(boxSize * 1.2, boxSize, boxCenter, camera);
-            controls.maxDistance = boxSize * 10;
-            controls.target.copy(boxCenter);
-            controls.update();
+            if(controls != undefined){
+                controls.maxDistance = boxSize * 10;
+                controls.target.copy(boxCenter);
+                controls.update();
+            }
         }
     });
 }
