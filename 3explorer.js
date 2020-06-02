@@ -24,7 +24,7 @@ function loadObj(scene, path){
     });
 }
 
-function loadGLTF(scene, path, camera, controls){
+function loadGLTF(scene, path, opt_camera, opt_callback){
     const gltfLoader = new GLTFLoader();
     var dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath( './js/libs/draco/' );
@@ -38,18 +38,16 @@ function loadGLTF(scene, path, camera, controls){
                 obj.receiveShadow = true;
             }
         });
-        if(camera != undefined){
+        if(opt_camera != undefined){
             const box = new THREE.Box3().setFromObject(modelRoot);
             const boxSize = box.getSize(new THREE.Vector3()).length();
             const boxCenter = box.getCenter(new THREE.Vector3());
             console.log('boxSize: '+boxSize);
             console.log('boxCenter: ( ' + boxCenter.x + '; ' + boxCenter.y + '; ' + boxCenter.z + ' )');
-            frameArea(boxSize * 1.2, boxSize, boxCenter, camera);
-            if(controls != undefined){
-                controls.maxDistance = boxSize * 10;
-                controls.target.copy(boxCenter);
-                controls.update();
-            }
+            frameArea(boxSize * 1.2, boxSize, boxCenter, opt_camera);
+        }
+        if(opt_callback !== undefined){
+            opt_callback();
         }
     });
 }
@@ -81,15 +79,16 @@ let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 let canJump = false;
-let initialPos = [0,0,0];
-let heightFromGround = 1;
+const explorerSettings = {
+    heightFromGround : 50,
+    speed : 2000,
+    jumpSpeed : 210.0,
+    mass : 36.0,
+};
 let prevTime = performance.now();
-let speed = 200.0; //Velocità per movimento
-let jumpSpeed = 20.0;
-let mass = 10.0;
 let velocity = new THREE.Vector3();
 let direction = new THREE.Vector3();
-let raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, heightFromGround ); //Cambia con height
+let raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, explorerSettings.heightFromGround );
 function enableControls (scene, camera, canvas){
     controls = new PointerLockControls( camera, canvas );
     canvas.addEventListener('mousedown', () =>{
@@ -112,12 +111,11 @@ function enableControls (scene, camera, canvas){
 }
 
 
-function setInitialPosition(camera,x,y,z){
+function moveTo(camera,x,y,z){
     camera.position.set(x,y,z);
-    initialPos = [x,y,z];
 }
 function setHeight(height){
-    heightFromGround = height;
+    explorerSettings.heightFromGround = height;
 }
 function keyDownHandler (event){
     switch ( event.keyCode ) {
@@ -143,8 +141,16 @@ function keyDownHandler (event){
             break;
 
         case 32: // space
-            if ( canJump === true ) velocity.y += jumpSpeed;
+            if ( canJump === true ) velocity.y += explorerSettings.jumpSpeed;
             canJump = false;
+            break;
+
+        case 80: //p
+            console.log('Current position: (' + controls.getObject().position.x + ';' + controls.getObject().position.y + ';' + controls.getObject().position.z+')');
+            break;
+
+        default:
+            console.log('Unhandled key: ' + event.keyCode);
             break;
 
     }
@@ -185,17 +191,17 @@ function doStep(scene){
     var time = performance.now();
     var delta = ( time - prevTime ) / 1000;
 
-    velocity.x -= velocity.x * mass * delta;
-    velocity.z -= velocity.z * mass * delta;
+    velocity.x -= velocity.x * explorerSettings.mass * delta;
+    velocity.z -= velocity.z * explorerSettings.mass * delta;
 
-    velocity.y -= 9.8 * mass * delta; // 100.0 = mass
+    velocity.y -= 9.8 * explorerSettings.mass * delta; // 100.0 = mass
 
     direction.z = Number( moveForward ) - Number( moveBackward );
     direction.x = Number( moveRight ) - Number( moveLeft );
     direction.normalize(); // this ensures consistent movements in all directions
 
-    if ( moveForward || moveBackward ) velocity.z -= direction.z * speed * delta;
-    if ( moveLeft || moveRight ) velocity.x -= direction.x * speed * delta;
+    if ( moveForward || moveBackward ) velocity.z -= direction.z * explorerSettings.speed * delta;
+    if ( moveLeft || moveRight ) velocity.x -= direction.x * explorerSettings.speed * delta;
 
     controls.moveRight( - velocity.x * delta );
     controls.moveForward( - velocity.z * delta );
@@ -208,15 +214,15 @@ function doStep(scene){
 
     controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
-    if(intersections !== undefined && intersections.length > 0 && controls.getObject().position.y - heightFromGround<intersections[0].point.y)
+    if(intersections !== undefined && intersections.length > 0 && controls.getObject().position.y - explorerSettings.heightFromGround<intersections[0].point.y)
     {
         console.log(intersections.length);
         velocity.y = Math.max( 0, velocity.y );
-        controls.getObject().position.y = intersections[0].point.y + heightFromGround;
+        controls.getObject().position.y = intersections[0].point.y + explorerSettings.heightFromGround;
         canJump = true;
-    }else if(controls.getObject().position.y < initialPos[1] ) {
+    }else if(controls.getObject().position.y < explorerSettings.heightFromGround ) {
         velocity.y = 0;
-        controls.getObject().position.y = initialPos[1];
+        controls.getObject().position.y = explorerSettings.heightFromGround;
         canJump = true;
     }
 
@@ -224,4 +230,4 @@ function doStep(scene){
     prevTime = time;
 };
 
-export {loadObj, loadGLTF, enableControls, doStep, setInitialPosition};
+export {loadObj, loadGLTF, enableControls, doStep, moveTo, explorerSettings};

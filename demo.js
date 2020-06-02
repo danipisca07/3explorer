@@ -31,7 +31,6 @@ function main(){
     scene.background = new THREE.Color(0xAAAAAA); //Colore background
 
     exp3.enableControls(scene, camera, canvas);
-    exp3.setInitialPosition(camera,-4,1,4);
 
     originRotation.position.set(0,0,0);
     scene.add(originRotation);
@@ -68,7 +67,30 @@ function main(){
 
     //loadObj(scene, 'assets/IronMan/IronMan');
     //loadGLTF(scene, 'assets/house/scene.gltf', camera, controls);
-    exp3.loadGLTF(scene, 'assets/uncompressed.gltf', camera);
+    //exp3.loadGLTF(scene, 'assets/uncompressed.gltf', camera);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const pathParam = urlParams.get('assetPath');
+    if(pathParam != null){
+        let whenLoaded = () => { //TODO: usare promise
+            exp3.moveTo(camera, 350, 172, -420); //Imposta posizione iniziale
+        }
+        exp3.loadGLTF(scene, 'assets/'+pathParam, camera, whenLoaded);
+    } else {
+        let whenLoaded = () => {
+            exp3.moveTo(camera, 350, 172, -420);
+        }
+        exp3.loadGLTF(scene, 'assets/uncompressed.gltf', camera, whenLoaded);
+        exp3.explorerSettings.speed = 200;
+        exp3.explorerSettings.jumpSpeed = 20;
+        exp3.explorerSettings.heightFromGround = 1;
+        exp3.explorerSettings.mass = 10.0;
+    }
+
+    gui.add(exp3.explorerSettings, 'speed').min(1).max(500).step(10);
+    gui.add(exp3.explorerSettings, 'jumpSpeed').min(1).max(500).step(10);
+    gui.add(exp3.explorerSettings, 'heightFromGround').min(1).max(100).step(1);
+    gui.add(exp3.explorerSettings, 'mass').min(1).max(100).step(1);
 
     function render(time){
         time *= 0.0006;
