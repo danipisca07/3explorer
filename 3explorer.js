@@ -114,9 +114,6 @@ function enableControls (scene, camera, canvas){
 function moveTo(camera,x,y,z){
     camera.position.set(x,y,z);
 }
-function setHeight(height){
-    explorerSettings.heightFromGround = height;
-}
 function keyDownHandler (event){
     switch ( event.keyCode ) {
 

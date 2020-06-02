@@ -73,12 +73,30 @@ function main(){
     const pathParam = urlParams.get('assetPath');
     if(pathParam != null){
         let whenLoaded = () => { //TODO: usare promise
-            exp3.moveTo(camera, 350, 172, -420); //Imposta posizione iniziale
+            console.log("Model loaded!");
+            if(pathParam === 'tavern/scene.gltf')//tavern
+            {
+                exp3.moveTo(camera, 350, 172, -420); //tavern
+                exp3.explorerSettings.speed = 2000;
+                exp3.explorerSettings.jumpSpeed = 210;
+                exp3.explorerSettings.heightFromGround = 50;
+                exp3.explorerSettings.mass = 36.0;
+            }
+            else if(pathParam === '8gemma/scene.gltf')//8 gemma
+            {
+                exp3.moveTo(camera, 8, 2, -11);
+                exp3.explorerSettings.speed = 50;
+                exp3.explorerSettings.jumpSpeed = 20;
+                exp3.explorerSettings.heightFromGround = 1;
+                exp3.explorerSettings.mass = 10.0;
+            }
         }
         exp3.loadGLTF(scene, 'assets/'+pathParam, camera, whenLoaded);
     } else {
         let whenLoaded = () => {
-            exp3.moveTo(camera, 350, 172, -420);
+            console.log("Model loaded!");
+            exp3.moveTo(camera, 0,0,0); //Imposta posizione iniziale
+
         }
         exp3.loadGLTF(scene, 'assets/uncompressed.gltf', camera, whenLoaded);
         exp3.explorerSettings.speed = 200;
@@ -89,7 +107,7 @@ function main(){
 
     gui.add(exp3.explorerSettings, 'speed').min(1).max(500).step(10);
     gui.add(exp3.explorerSettings, 'jumpSpeed').min(1).max(500).step(10);
-    gui.add(exp3.explorerSettings, 'heightFromGround').min(1).max(100).step(1);
+    gui.add(exp3.explorerSettings, 'heightFromGround').min(-100).max(100).step(1);
     gui.add(exp3.explorerSettings, 'mass').min(1).max(100).step(1);
 
     function render(time){
