@@ -77,18 +77,30 @@ function main(){
             if(pathParam === 'tavern/scene.gltf')//tavern
             {
                 exp3.moveTo(camera, 350, 172, -420); //tavern
-                exp3.explorerSettings.speed = 2000;
-                exp3.explorerSettings.jumpSpeed = 210;
+                exp3.explorerSettings.speed = 30;
+                exp3.explorerSettings.jumpSpeed = 130;
+                exp3.explorerSettings.minHeight = 50;
                 exp3.explorerSettings.heightFromGround = 50;
-                exp3.explorerSettings.mass = 36.0;
+                exp3.explorerSettings.mass = 40.0;
             }
             else if(pathParam === '8gemma/scene.gltf')//8 gemma
             {
                 exp3.moveTo(camera, 8, 2, -11);
-                exp3.explorerSettings.speed = 50;
+                exp3.explorerSettings.speed = 5;
                 exp3.explorerSettings.jumpSpeed = 20;
-                exp3.explorerSettings.heightFromGround = 1;
+                exp3.explorerSettings.minHeight = 1;
+                exp3.explorerSettings.heightFromGround = 1.5;
                 exp3.explorerSettings.mass = 10.0;
+            }
+            else if(pathParam === '1diamante/pt/scene.gltf')
+            {
+                console.log('1diamante/pt settings');
+                exp3.moveTo(camera, 7080, 100, -980);
+                exp3.explorerSettings.speed = 60;
+                exp3.explorerSettings.jumpSpeed = 300;
+                exp3.explorerSettings.minHeight = 1;
+                exp3.explorerSettings.heightFromGround = 150;
+                exp3.explorerSettings.mass = 50.0;
             }
         }
         exp3.loadGLTF(scene, 'assets/'+pathParam, camera, whenLoaded);
@@ -105,10 +117,12 @@ function main(){
         exp3.explorerSettings.mass = 10.0;
     }
 
-    gui.add(exp3.explorerSettings, 'speed').min(1).max(500).step(10);
-    gui.add(exp3.explorerSettings, 'jumpSpeed').min(1).max(500).step(10);
-    gui.add(exp3.explorerSettings, 'heightFromGround').min(-100).max(100).step(1);
-    gui.add(exp3.explorerSettings, 'mass').min(1).max(100).step(1);
+    gui.add(exp3.explorerSettings, 'speed').min(1).max(100).step(1).listen();
+    gui.add(exp3.explorerSettings, 'friction').min(1).max(10).step(0.5).listen();
+    gui.add(exp3.explorerSettings, 'jumpSpeed').min(1).max(500).step(10).listen();
+    gui.add(exp3.explorerSettings, 'minHeight').min(-100).max(100).step(1).listen();
+    gui.add(exp3.explorerSettings, 'heightFromGround').min(-200).max(200).step(0.5).listen();
+    gui.add(exp3.explorerSettings, 'mass').min(1).max(100).step(1).listen();
 
     function render(time){
         time *= 0.0006;

@@ -24,6 +24,11 @@ function loadObj(scene, path){
     });
 }
 
+function executeOnChildrens(obj, callback){
+    obj.children.forEach((el) => { executeOnChildrens(el, callback)});
+    callback(obj);
+}
+
 function loadGLTF(scene, path, opt_camera, opt_callback){
     const gltfLoader = new GLTFLoader();
     var dracoLoader = new DRACOLoader();
@@ -32,12 +37,13 @@ function loadGLTF(scene, path, opt_camera, opt_callback){
     gltfLoader.load(path, (gltf) => {
         modelRoot = gltf.scene;
         scene.add(modelRoot);
-        modelRoot.children.forEach((obj) => {
+        let enableShadows = (obj) => {
             if (obj.castShadow !== undefined) {
                 obj.castShadow = true;
                 obj.receiveShadow = true;
             }
-        });
+        };
+        executeOnChildrens(modelRoot, enableShadows);
         if(opt_camera != undefined){
             const box = new THREE.Box3().setFromObject(modelRoot);
             const boxSize = box.getSize(new THREE.Vector3()).length();
@@ -80,15 +86,17 @@ let moveLeft = false;
 let moveRight = false;
 let canJump = false;
 const explorerSettings = {
-    heightFromGround : 50,
-    speed : 2000,
-    jumpSpeed : 210.0,
-    mass : 36.0,
+    minHeight: 1,
+    heightFromGround : 10,
+    speed : 50,
+    friction: 10.0,
+    jumpSpeed : 20.0,
+    mass : 10.0,
 };
 let prevTime = performance.now();
 let velocity = new THREE.Vector3();
 let direction = new THREE.Vector3();
-let raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, explorerSettings.heightFromGround );
+let raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 1000 );
 function enableControls (scene, camera, canvas){
     controls = new PointerLockControls( camera, canvas );
     canvas.addEventListener('mousedown', () =>{
@@ -188,8 +196,8 @@ function doStep(scene){
     var time = performance.now();
     var delta = ( time - prevTime ) / 1000;
 
-    velocity.x -= velocity.x * explorerSettings.mass * delta;
-    velocity.z -= velocity.z * explorerSettings.mass * delta;
+    velocity.x -= velocity.x * explorerSettings.friction * delta;
+    velocity.z -= velocity.z * explorerSettings.friction * delta;
 
     velocity.y -= 9.8 * explorerSettings.mass * delta; // 100.0 = mass
 
@@ -197,32 +205,39 @@ function doStep(scene){
     direction.x = Number( moveRight ) - Number( moveLeft );
     direction.normalize(); // this ensures consistent movements in all directions
 
-    if ( moveForward || moveBackward ) velocity.z -= direction.z * explorerSettings.speed * delta;
-    if ( moveLeft || moveRight ) velocity.x -= direction.x * explorerSettings.speed * delta;
+    if ( moveForward || moveBackward ) velocity.z -= direction.z * explorerSettings.mass * delta;
+    if ( moveLeft || moveRight ) velocity.x -= direction.x * explorerSettings.mass * delta;
 
-    controls.moveRight( - velocity.x * delta );
-    controls.moveForward( - velocity.z * delta );
+    controls.moveRight( - velocity.x * explorerSettings.speed * delta );
+    controls.moveForward( - velocity.z * explorerSettings.speed * delta );
 
     let intersections;
     if(modelRoot != undefined){
-        raycaster.ray.origin.copy( controls.getObject().position )
-        intersections = raycaster.intersectObject(scene, true ); //TODO: ottimizza con un ciclo ricorsivo su ogni oggetto della scena e ti fermi al
+        if(raycaster.far !== explorerSettings.heightFromGround * 2){
+            raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, explorerSettings.heightFromGround * 2 );
+        }
+        raycaster.ray.origin.copy( controls.getObject().position );
+        intersections = raycaster.intersectObject(modelRoot, true ); //TODO: ottimizza con un ciclo ricorsivo su ogni oggetto della scena e ti fermi al
     }
 
-    controls.getObject().position.y += ( velocity.y * delta ); // new behavior
+    let newY = controls.getObject().position.y + ( velocity.y * delta ); // new behavior
 
-    if(intersections !== undefined && intersections.length > 0 && controls.getObject().position.y - explorerSettings.heightFromGround<intersections[0].point.y)
+    if(intersections === undefined || intersections.length === 0){
+        console.log("NO INTERS");
+    }
+
+    if(intersections !== undefined && intersections.length > 0 && newY - explorerSettings.heightFromGround<intersections[0].point.y)
     {
-        console.log(intersections.length);
         velocity.y = Math.max( 0, velocity.y );
-        controls.getObject().position.y = intersections[0].point.y + explorerSettings.heightFromGround;
+        newY = intersections[0].point.y + explorerSettings.heightFromGround;
         canJump = true;
-    }else if(controls.getObject().position.y < explorerSettings.heightFromGround ) {
+    }else if(newY < explorerSettings.minHeight ) {
         velocity.y = 0;
-        controls.getObject().position.y = explorerSettings.heightFromGround;
+        newY = explorerSettings.minHeight;
         canJump = true;
     }
 
+    controls.getObject().position.y = newY;
 
     prevTime = time;
 };
